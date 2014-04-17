@@ -9,10 +9,17 @@
    :up    (comp transpose-board process-board transpose-board)
    :down  (comp transpose-board mirrorv-board process-board mirrorv-board transpose-board)})
 
+(defn move-and-add
+  [move add board]
+  (let [moved (move board)]
+    (if (not= moved board)
+      (add moved)
+      board)))
+
 (defn move-handler
   [state {:keys [direction]}]
   (let [handler (direction direction-handler-map)]
-    (swap! state update-in [:board] (comp add-random-cell handler))))
+    (swap! state update-in [:board] (partial move-and-add handler add-random-cell))))
 
 (defn game-over-handler
   [state {:keys [game-over]}]
