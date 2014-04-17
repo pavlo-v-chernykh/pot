@@ -48,19 +48,21 @@
             #(root-key-handler @cursor actions %))))
       om/IRender
       (render [_]
-        (let [board (:board cursor)]
+        (let [board (:board cursor)
+              yc (count board)
+              xc (count (first board))]
           (html
             (into
               [:table]
-              (for [y (range (count board))]
+              (for [y (range yc)]
                 (into
-                  [:tr]
-                  (for [x (range (count (first board)))]
-                    [:td {:style {:width      50 ; todo move to css
+                  [:tr {:key (str "tr" y)}]
+                  (for [x (range xc)]
+                    [:td {:style {:width      50
                                   :height     50
                                   :border     [["1px solid black"]]
-                                  :text-align :center}
-                          :key (str (* (+ 1 y) (+ 1 x)))}
+                                  :text-align :center} ; todo move to css
+                          :key   (str "td" (+ (* yc y) x))}
                      (get-in board [y x])])))))))))
   app-state
   {:target (. js/document (getElementById "app"))
