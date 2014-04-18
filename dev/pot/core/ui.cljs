@@ -5,16 +5,19 @@
             [cljs.core.async :refer [put!]]
             [pot.core.bl :refer [add-random-cell]]
             [pot.core.act :refer [listen-channels watch-changes]]
-            [pot.core.state :refer [create-state]]
+            [pot.core.state :refer [create-state create-history]]
             [pot.core.chan :refer [create-channels]])
   (:import [goog.events KeyHandler KeyCodes]))
 
 (enable-console-print!)
 
 (def app-state (create-state {:width  4
-                              :height 4}))
+                              :height 4
+                              :init   2}))
 
-(def chans (create-channels))
+(def app-history (create-history))
+
+(def channels (create-channels))
 
 (def key-direction-map
   {KeyCodes.LEFT  :left
@@ -22,16 +25,25 @@
    KeyCodes.UP    :up
    KeyCodes.DOWN  :down})
 
+(def key-action-map
+  {KeyCodes.LEFT  :move
+   KeyCodes.RIGHT :move
+   KeyCodes.UP    :move
+   KeyCodes.DOWN  :move
+   KeyCodes.ESC   :undo})
+
 (defn translate-key-to-msg
   [key]
-  (let [direction (get key-direction-map key)]
-    (cond
-      direction {:msg :move :direction direction})))
+  (let [action (get key-action-map key)]
+    (condp = action
+      :move {:msg :move :direction (get key-direction-map key)}
+      :undo {:msg :undo}
+      nil nil)))
 
 (defn root-key-handler
-  [{:keys [game-over]} actions e]
+  [_ actions e]
   (let [msg (translate-key-to-msg (.-keyCode e))]
-    (when (and msg (not game-over))
+    (when msg
       (put! actions msg))))
 
 (om/root
@@ -41,7 +53,7 @@
       (display-name [_] "board")
       om/IWillMount
       (will-mount [_]
-        (let [actions (om/get-state owner [:chans :actions])]
+        (let [actions (om/get-state owner [:channels :actions])]
           (events/listen
             (KeyHandler. js/document)
             KeyHandler.EventType.KEY
@@ -49,27 +61,28 @@
       om/IRender
       (render [_]
         (let [board (:board cursor)
+              game-over (:game-over cursor)
               yc (count board)
               xc (count (first board))]
           (html
-            (into
-              [:table]
-              (for [y (range yc)]
-                (into
-                  [:tr {:key (str "tr" y)}]
-                  (for [x (range xc)]
-                    [:td {:style {:width      50
-                                  :height     50
-                                  :border     [["1px solid black"]]
-                                  :text-align :center} ; todo move to css
-                          :key   (str "td" (+ (* yc y) x))}
-                     (get-in board [y x])])))))))))
+            [:table
+             (if game-over
+               [:tbody [:tr [:td "GAME OVER"]]]
+               (into
+                 [:tbody]
+                 (for [y (range yc)]
+                   (into
+                     [:tr {:key (str "tr" y)}]
+                     (for [x (range xc)]
+                       [:td {:style {:width      50
+                                     :height     50
+                                     :border     [["1px solid black"]]
+                                     :text-align :center}   ; todo move to css
+                             :key   (str "td" (+ (* yc y) x))}
+                        (get-in board [y x])])))))])))))
   app-state
-  {:target (. js/document (getElementById "app"))
-   :init-state {:chans chans}})
+  {:target     (.getElementById js/document "app")
+   :init-state {:channels channels}})
 
-(listen-channels app-state chans)
-(watch-changes app-state chans)
-
-(swap! app-state update-in [:board] add-random-cell) ; todo mote it out of here
-(swap! app-state update-in [:board] add-random-cell)
+(listen-channels app-state app-history channels)
+(watch-changes app-state app-history channels)

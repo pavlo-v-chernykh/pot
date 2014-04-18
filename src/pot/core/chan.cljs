@@ -4,5 +4,6 @@
 (defn create-channels
   []
   {:actions (chan)
-   :changes (chan)})
+   :changes (chan)
+   :history (chan)})
 
