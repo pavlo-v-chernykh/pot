@@ -12,7 +12,7 @@
 
 (defn add-cell
   [board location]
-  (assoc-in board location (if (< (rand) 0.9) 2 4) board))
+  (assoc-in board location (if (< (rand) 0.9) 2 4)))
 
 (defn add-random-cell
   [board]
