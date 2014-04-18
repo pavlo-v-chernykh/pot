@@ -85,4 +85,4 @@
    :init-state {:channels channels}})
 
 (listen-channels app-state app-history channels)
-(watch-changes app-state app-history channels)
+(watch-changes app-state app-history)
