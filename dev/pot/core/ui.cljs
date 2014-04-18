@@ -77,7 +77,7 @@
                        [:td {:style {:width      50
                                      :height     50
                                      :border     [["1px solid black"]]
-                                     :text-align :center}   ; todo move to css
+                                     :text-align :center}
                              :key   (str "td" (+ (* yc y) x))}
                         (get-in board [y x])])))))])))))
   app-state
