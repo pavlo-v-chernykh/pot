@@ -57,3 +57,12 @@
 (defn transpose-board
   [board]
   (apply mapv vector board))
+
+(def move-left process-board)
+(def move-right (comp mirrorv-board process-board mirrorv-board))
+(def move-up (comp transpose-board process-board transpose-board))
+(def move-down (comp transpose-board mirrorv-board process-board mirrorv-board transpose-board))
+
+(defn can-take-step?
+  [board]
+  (apply not= (cons board (for [f [move-left move-right move-up move-down]] (f board)))))
