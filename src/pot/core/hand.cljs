@@ -13,9 +13,12 @@
   (fn [_ _ old new]
     (let [old-board (:board old)
           new-board (:board new)
-          last-board (:board (peek @history))]
+          hval @history
+          cursor (:cursor hval)
+          last-board (:board (get-in hval [:snapshots cursor]))]
       (when-not (or (= old-board new-board) (= old-board last-board))
-        (swap! history conj {:board old-board})))))
+        (swap! history assoc-in [:snapshots (inc cursor)] {:board old-board})
+        (swap! history update-in [:cursor] inc)))))
 
 (def ^:private direction-handler-map
   {:left  move-left
@@ -35,13 +38,15 @@
 
 (defn undo-handler
   [_ state history]
-  (let [snapshot (peek @history)]
+  (let [hval @history
+        cursor (:cursor hval)
+        snapshot (get-in hval [:snapshots cursor])]
     (when snapshot
+      (remove-watch state :history-watcher)
       (when (:game-over @state)
         (remove-watch state :game-over-watcher)
         (swap! state assoc :game-over false)
         (add-watch state :game-over-watcher (game-over-watcher state history)))
-      (remove-watch state :history-watcher)
       (swap! state assoc :board (:board snapshot))
       (add-watch state :history-watcher (history-watcher state history))
-      (swap! history pop))))
+      (swap! history update-in [:cursor] dec))))

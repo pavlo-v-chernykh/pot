@@ -10,4 +10,5 @@
 
 (defn create-history
   []
-  (atom []))
+  (atom {:snapshots []
+         :cursor    -1}))
