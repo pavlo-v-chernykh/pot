@@ -2,10 +2,16 @@
   (:require [pot.core.bl :refer [move-left move-right move-up move-down
                                  can-take-step? add-random-cell]]))
 
+(def ^:private direction-handler-map
+  {:left  move-left
+   :right move-right
+   :up    move-up
+   :down  move-down})
+
 (defn game-over-watcher
   [state _]
   (fn [_ _ _ new]
-    (when-not (or (:game-over new) (can-take-step? (:board new)))
+    (when-not (or (:game-over new) (apply can-take-step? (:board new) (vals direction-handler-map)))
       (swap! state assoc :game-over true))))
 
 (defn history-watcher
@@ -20,21 +26,14 @@
         (swap! history assoc-in [:snapshots (inc cursor)] {:board old-board})
         (swap! history update-in [:cursor] inc)))))
 
-(def ^:private direction-handler-map
-  {:left  move-left
-   :right move-right
-   :up    move-up
-   :down  move-down})
-
 (defn move-handler
   [{:keys [direction]} state _]
-  (let [handler (direction direction-handler-map)]
-    (when (not (:game-over @state))
-      (swap! state update-in [:board] (fn [board]
-                                        (let [moved (handler board)]
-                                          (if (not= moved board)
-                                            (add-random-cell moved)
-                                            board)))))))
+  (let [handler (direction direction-handler-map)
+        sval @state
+        game-over (:game-over sval)
+        board (:board sval)]
+    (when (and (not game-over) (can-take-step? board handler))
+      (swap! state update-in [:board] (comp add-random-cell handler)))))
 
 (defn undo-handler
   [_ state history]
