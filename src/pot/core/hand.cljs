@@ -21,31 +21,43 @@
           new-board (:board new)
           hval @history
           cursor (:cursor hval)
-          last-board (:board (get-in hval [:snapshots cursor]))]
+          last-board (:board (get-in hval [:snapshots (dec cursor)]))]
       (when-not (or (= old-board new-board) (= old-board last-board))
-        (swap! history assoc-in [:snapshots (inc cursor)] {:board old-board})
+        (swap! history assoc-in [:snapshots cursor] {:board old-board})
         (swap! history update-in [:cursor] inc)))))
 
 (defn move-handler
-  [{:keys [direction]} state _]
+  [{:keys [direction]} state history]
   (let [handler (direction direction-handler-map)
-        sval @state
+        hval @history sval @state
         game-over (:game-over sval)
-        board (:board sval)]
+        board (:board sval)
+        cursor (:cursor hval)
+        next-board (get-in hval [:snapshots (inc cursor) :board])
+        cur-dir (get-in hval [:directions cursor])]
     (when (and (not game-over) (can-take-step? board handler))
-      (swap! state update-in [:board] (comp add-random-cell handler)))))
+      (if (= cur-dir direction)
+        (swap! state assoc :board next-board)
+        (let [take-up-to-cursor (comp vec (partial take (inc cursor)))]
+          (swap! history update-in [:directions] take-up-to-cursor)
+          (swap! history update-in [:snapshots] take-up-to-cursor)
+          (swap! state update-in [:board] (comp add-random-cell handler))))
+      (swap! history assoc-in [:directions cursor] direction))))
 
 (defn undo-handler
   [_ state history]
-  (let [hval @history
+  (let [hval @history sval @state
         cursor (:cursor hval)
-        snapshot (get-in hval [:snapshots cursor])]
-    (when snapshot
+        last-board (get-in hval [:snapshots (dec cursor) :board])
+        game-over (:game-over sval)
+        board (:board sval)]
+    (when last-board
       (remove-watch state :history-watcher)
-      (when (:game-over @state)
+      (when game-over
         (remove-watch state :game-over-watcher)
         (swap! state assoc :game-over false)
         (add-watch state :game-over-watcher (game-over-watcher state history)))
-      (swap! state assoc :board (:board snapshot))
+      (swap! state assoc :board last-board)
       (add-watch state :history-watcher (history-watcher state history))
+      (swap! history assoc-in [:snapshots cursor] {:board board})
       (swap! history update-in [:cursor] dec))))

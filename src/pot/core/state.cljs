@@ -12,4 +12,4 @@
   []
   (atom {:snapshots  []
          :directions []
-         :cursor     -1}))
+         :cursor     0}))
