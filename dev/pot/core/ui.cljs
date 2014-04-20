@@ -35,10 +35,10 @@
 (defn translate-key-to-msg
   [key]
   (let [action (get key-action-map key)]
-    (condp = action
+    (case action
       :move {:msg :move :direction (get key-direction-map key)}
       :undo {:msg :undo}
-      nil nil)))
+      nil)))
 
 (defn root-key-handler
   [_ actions e]

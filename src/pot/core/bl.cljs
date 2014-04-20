@@ -64,5 +64,9 @@
 (def move-down (comp transpose-board mirrorv-board process-board mirrorv-board transpose-board))
 
 (defn can-take-step?
-  [board & steppers]
-  (apply not= (cons board (for [f steppers] (f board)))))
+  [board stepper]
+  (not= board (stepper board)))
+
+(defn can-take-some-step?
+  [board steppers]
+  (some (partial can-take-step? board) steppers))

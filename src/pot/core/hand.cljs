@@ -1,6 +1,6 @@
 (ns pot.core.hand
   (:require [pot.core.bl :refer [move-left move-right move-up move-down
-                                 can-take-step? add-random-cell]]))
+                                 can-take-step? can-take-some-step? add-random-cell]]))
 
 (def ^:private direction-handler-map
   {:left  move-left
@@ -11,7 +11,7 @@
 (defn game-over-watcher
   [state _]
   (fn [_ _ _ new]
-    (when-not (or (:game-over new) (apply can-take-step? (:board new) (vals direction-handler-map)))
+    (when-not (or (:game-over new) (can-take-some-step? (:board new) (vals direction-handler-map)))
       (swap! state assoc :game-over true))))
 
 (defn history-watcher
