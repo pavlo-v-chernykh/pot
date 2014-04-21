@@ -8,12 +8,6 @@
    :up    move-up
    :down  move-down})
 
-(defn game-over-watcher
-  [state _]
-  (fn [_ _ _ new]
-    (when-not (or (:game-over new) (can-take-some-step? (:board new) (vals direction-handler-map)))
-      (swap! state assoc :game-over true))))
-
 (defn history-watcher
   [_ history]
   (fn [_ _ old new]
@@ -42,11 +36,17 @@
         cur-dir (get-in hval [:directions cursor])]
     (when (and (not game-over) (can-take-step? board handler))
       (if (= cur-dir direction)
-        (swap! state assoc :board next-board)
-        (let [take-up-to-cursor (comp vec (partial take (inc cursor)))]
+        (do
+          (when-not (can-take-some-step? next-board (vals direction-handler-map))
+            (swap! state assoc :game-over true))
+          (swap! state assoc :board next-board))
+        (let [take-up-to-cursor (comp vec (partial take (inc cursor)))
+              new-board (-> board handler add-random-cell)]
           (swap! history update-in [:directions] take-up-to-cursor)
           (swap! history update-in [:snapshots] take-up-to-cursor)
-          (swap! state update-in [:board] (comp add-random-cell handler))))
+          (swap! state assoc :board new-board)
+          (when-not (can-take-some-step? new-board (vals direction-handler-map))
+            (swap! state assoc :game-over true))))
       (swap! history assoc-in [:directions cursor] direction))))
 
 (defn undo-handler
@@ -59,9 +59,7 @@
     (when last-board
       (remove-watch state :history-watcher)
       (when game-over
-        (remove-watch state :game-over-watcher)
-        (swap! state assoc :game-over false)
-        (add-watch state :game-over-watcher (game-over-watcher state history)))
+        (swap! state assoc :game-over false))
       (swap! state assoc :board last-board)
       (add-watch state :history-watcher (history-watcher state history))
       (swap! history assoc-in [:snapshots cursor] {:board board})

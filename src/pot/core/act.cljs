@@ -1,8 +1,7 @@
 (ns pot.core.act
   (:require-macros [cljs.core.async.macros :refer [go alt!]])
   (:require [cljs.reader :refer [read-string]]
-            [pot.core.hand :refer [move-handler undo-handler
-                                   game-over-watcher history-watcher storage-watcher]]))
+            [pot.core.hand :refer [move-handler undo-handler history-watcher storage-watcher]]))
 
 (def ^:private msg-handler-map
   {:move      move-handler
@@ -21,7 +20,6 @@
 
 (defn watch-changes
   [state history storage]
-  (add-watch state :game-over-watcher (game-over-watcher state history))
   (add-watch state :history-watcher (history-watcher state history))
   (add-watch state :storage-watcher (storage-watcher storage :state))
   (add-watch history :storage-watcher (storage-watcher storage :history)))
