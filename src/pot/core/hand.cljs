@@ -16,9 +16,9 @@
           hval @history
           cursor (:cursor hval)
           last-board (:board (get-in hval [:snapshots (dec cursor)]))]
-      (when-not (or (= old-board new-board) (= old-board last-board))
+      (when-not (= old-board new-board)
         (swap! history assoc-in [:snapshots cursor] old)
-        (swap! history update-in [:cursor] inc)))))
+        (swap! history update-in [:cursor] (if (= new-board last-board) dec inc))))))
 
 (defn storage-watcher
   [storage key]
@@ -51,16 +51,7 @@
 
 (defn undo-handler
   [_ state history]
-  (let [hval @history sval @state
-        cursor (:cursor hval)
-        last-board (get-in hval [:snapshots (dec cursor) :board])
-        game-over (:game-over sval)
-        board (:board sval)]
-    (when last-board
-      (remove-watch state :history-watcher)
-      (when game-over
-        (swap! state assoc :game-over false))
-      (swap! state assoc :board last-board)
-      (add-watch state :history-watcher (history-watcher state history))
-      (swap! history assoc-in [:snapshots cursor] sval)
-      (swap! history update-in [:cursor] dec))))
+  (let [history-value @history
+        last-snapshot (get-in history-value [:snapshots (dec (:cursor history-value))])]
+    (when last-snapshot
+      (reset! state last-snapshot))))
