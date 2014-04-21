@@ -17,7 +17,7 @@
           cursor (:cursor hval)
           last-board (:board (get-in hval [:snapshots (dec cursor)]))]
       (when-not (or (= old-board new-board) (= old-board last-board))
-        (swap! history assoc-in [:snapshots cursor] {:board old-board})
+        (swap! history assoc-in [:snapshots cursor] old)
         (swap! history update-in [:cursor] inc)))))
 
 (defn storage-watcher
@@ -62,5 +62,5 @@
         (swap! state assoc :game-over false))
       (swap! state assoc :board last-board)
       (add-watch state :history-watcher (history-watcher state history))
-      (swap! history assoc-in [:snapshots cursor] {:board board})
+      (swap! history assoc-in [:snapshots cursor] sval)
       (swap! history update-in [:cursor] dec))))
