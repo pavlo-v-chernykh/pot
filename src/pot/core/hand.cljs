@@ -32,14 +32,11 @@
         game-over (:game-over sval)
         board (:board sval)
         cursor (:cursor hval)
-        next-board (get-in hval [:snapshots (inc cursor) :board])
+        next-snapshot (get-in hval [:snapshots (inc cursor)])
         cur-dir (get-in hval [:directions cursor])]
     (when (and (not game-over) (can-take-step? board handler))
       (if (= cur-dir direction)
-        (do
-          (when-not (can-take-some-step? next-board (vals direction-handler-map))
-            (swap! state assoc :game-over true))
-          (swap! state assoc :board next-board))
+        (reset! state next-snapshot)
         (let [take-up-to-cursor (comp vec (partial take (inc cursor)))
               new-board (-> board handler add-random-cell)]
           (swap! history update-in [:directions] take-up-to-cursor)
