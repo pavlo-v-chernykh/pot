@@ -48,11 +48,11 @@
 
 (defn process-board
   [board]
-  (vec (map (comp vec process-row) board)))
+  (mapv (comp vec process-row) board))
 
 (defn mirrorv-board
   [board]
-  (vec (map (comp vec reverse) board)))
+  (mapv (comp vec reverse) board))
 
 (defn transpose-board
   [board]
