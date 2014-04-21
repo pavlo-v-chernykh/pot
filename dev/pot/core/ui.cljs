@@ -4,20 +4,12 @@
             [sablono.core :as html :refer-macros [html]]
             [cljs.core.async :refer [put!]]
             [pot.core.bl :refer [add-random-cell]]
-            [pot.core.act :refer [listen-channels watch-changes]]
-            [pot.core.state :refer [create-state create-history]]
+            [pot.core.act :refer [listen-channels watch-changes restore-state]]
+            [pot.core.state :refer [create-state create-history create-storage]]
             [pot.core.chan :refer [create-channels]])
   (:import [goog.events KeyHandler KeyCodes]))
 
 (enable-console-print!)
-
-(def app-state (create-state {:width  4
-                              :height 4
-                              :init   2}))
-
-(def app-history (create-history))
-
-(def channels (create-channels))
 
 (def key-direction-map
   {KeyCodes.LEFT  :left
@@ -45,6 +37,15 @@
   (let [msg (translate-key-to-msg (.-keyCode e))]
     (when msg
       (put! actions msg))))
+
+(def app-state (create-state {:width  4
+                              :height 4
+                              :init   2}))
+(def app-history (create-history))
+(def channels (create-channels))
+(def storage (create-storage))
+
+(restore-state app-state app-history storage)
 
 (om/root
   (fn [cursor owner]
@@ -85,4 +86,4 @@
    :init-state {:channels channels}})
 
 (listen-channels app-state app-history channels)
-(watch-changes app-state app-history)
+(watch-changes app-state app-history storage)

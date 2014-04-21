@@ -26,6 +26,11 @@
         (swap! history assoc-in [:snapshots cursor] {:board old-board})
         (swap! history update-in [:cursor] inc)))))
 
+(defn storage-watcher
+  [storage key]
+  (fn [_ _ _ new]
+    (.set storage key (pr-str new))))
+
 (defn move-handler
   [{:keys [direction]} state history]
   (let [handler (direction direction-handler-map)
