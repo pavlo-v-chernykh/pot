@@ -6,9 +6,13 @@
   [board]
   (apply
     concat
-    (for [y (range (count board))]
-      (for [x (range (count (first board))) :when (nil? (get-in board [y x]))]
-        [y x]))))
+    (map-indexed
+      (fn [y row]
+        (keep-indexed
+          (fn [x cell]
+            (when-not cell [y x]))
+          row))
+      board)))
 
 (defn add-cell
   [board location]
