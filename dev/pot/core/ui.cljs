@@ -3,7 +3,7 @@
             [goog.events :as events]
             [sablono.core :as html :refer-macros [html]]
             [cljs.core.async :refer [put!]]
-            [pot.core.bl :refer [add-random-cell]]
+            [pot.core.bl :refer [game-over? add-random-cell]]
             [pot.core.act :refer [listen-channels watch-changes restore-state]]
             [pot.core.state :refer [create-state create-history create-storage]]
             [pot.core.chan :refer [create-channels]])
@@ -62,12 +62,11 @@
       om/IRender
       (render [_]
         (let [board (:board cursor)
-              game-over (:game-over cursor)
               yc (count board)
               xc (count (first board))]
           (html
             [:table
-             (if game-over
+             (if (game-over? board)
                [:tbody [:tr [:td "GAME OVER"]]]
                (into
                  [:tbody]

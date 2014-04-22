@@ -33,14 +33,13 @@
         state-value @state
         cursor (:cursor history-value)
         next-snapshot (get-in history-value [:snapshots (inc cursor)])]
-    (when (not (:game-over state-value))
+    (when (not (game-over? (:board state-value)))
       (if (and next-snapshot (= direction (:direction next-snapshot)))
         (reset! state next-snapshot)
         (let [take-up-to-cursor (comp vec (partial take (inc cursor)))
               new-board (-> state-value :board handler add-random-cell)]
           (swap! history update-in [:snapshots] take-up-to-cursor)
           (reset! state {:board     new-board
-                         :game-over (game-over? new-board)
                          :direction direction}))))))
 
 (defn undo-handler
