@@ -8,12 +8,12 @@
   [{:keys [width height init]}]
   (let [board (vec (repeat height (vec (repeat width nil))))]
     (atom {:board     (->> board (iterate add-random-cell) rest (take init) last)
-           :game-over false})))
+           :game-over false
+           :direction nil})))
 
 (defn create-history
   []
   (atom {:snapshots  []
-         :directions []
          :cursor     0}))
 
 (defn create-storage

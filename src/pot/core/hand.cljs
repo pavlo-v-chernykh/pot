@@ -32,19 +32,17 @@
         history-value @history
         state-value @state
         cursor (:cursor history-value)
-        cur-dir (get-in history-value [:directions cursor])
         next-snapshot (get-in history-value [:snapshots (inc cursor)])]
     (when (not (:game-over state-value))
-      (if (= direction cur-dir)
-        (when next-snapshot
+      (if next-snapshot
+        (when (= direction (:direction next-snapshot))
           (reset! state next-snapshot))
         (let [take-up-to-cursor (comp vec (partial take (inc cursor)))
               new-board (-> state-value :board handler add-random-cell)]
-          (swap! history update-in [:directions] take-up-to-cursor)
           (swap! history update-in [:snapshots] take-up-to-cursor)
-          (swap! history assoc-in [:directions cursor] direction)
           (reset! state {:board     new-board
-                         :game-over (not (can-take-some-step? new-board (vals direction-handler-map)))}))))))
+                         :game-over (not (can-take-some-step? new-board (vals direction-handler-map)))
+                         :direction direction}))))))
 
 (defn undo-handler
   [_ state history]
