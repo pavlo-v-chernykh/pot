@@ -1,6 +1,6 @@
 (ns pot.core.hand
   (:require [pot.core.bl :refer [move-left move-right move-up move-down
-                                 can-take-some-step? add-random-cell]]))
+                                 game-over? add-random-cell]]))
 
 (def ^:private direction-handler-map
   {:left  move-left
@@ -40,7 +40,7 @@
               new-board (-> state-value :board handler add-random-cell)]
           (swap! history update-in [:snapshots] take-up-to-cursor)
           (reset! state {:board     new-board
-                         :game-over (not (can-take-some-step? new-board (vals direction-handler-map)))
+                         :game-over (game-over? new-board)
                          :direction direction}))))))
 
 (defn undo-handler

@@ -74,3 +74,7 @@
 (defn can-take-some-step?
   [board steppers]
   (some (partial can-take-step? board) steppers))
+
+(defn game-over?
+  [board]
+  (not (can-take-some-step? board [move-left move-right move-up move-down])))
