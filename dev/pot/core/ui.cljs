@@ -61,25 +61,26 @@
             #(root-key-handler @cursor actions %))))
       om/IRender
       (render [_]
-        (let [board (:board cursor)
-              yc (count board)
-              xc (count (first board))]
+        (let [board (:board cursor)]
           (html
             [:table
              (if (game-over? board)
                [:tbody [:tr [:td "GAME OVER"]]]
-               (into
-                 [:tbody]
-                 (for [y (range yc)]
-                   (into
-                     [:tr {:key (str "tr" y)}]
-                     (for [x (range xc)]
-                       [:td {:style {:width      50
-                                     :height     50
-                                     :border     [["1px solid black"]]
-                                     :text-align :center}
-                             :key   (str "td" (+ (* yc y) x))}
-                        (get-in board [y x])])))))])))))
+               [:tbody
+                (map-indexed
+                  (fn [y row]
+                    [:tr {:key (str "tr" y)}
+                     (let [rc (count row)]
+                       (map-indexed
+                         (fn [x cell]
+                           [:td {:style {:width      50
+                                         :height     50
+                                         :border     [["1px solid black"]]
+                                         :text-align :center}
+                                 :key   (str "td" (+ (* rc y) x))}
+                            cell])
+                         row))])
+                  board)])])))))
   app-state
   {:target     (.getElementById js/document "app")
    :init-state {:channels channels}})
