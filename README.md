@@ -13,4 +13,4 @@ I've developed it using the next technology stack
  * [Om](https://github.com/swannodette/om)
  * [core.async](https://github.com/clojure/core.async)
 
-Demo comming soon...
+[Demo draft](http://pavel-v-chernykh.github.io/pot/react.html)
