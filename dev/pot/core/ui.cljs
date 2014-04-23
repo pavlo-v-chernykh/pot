@@ -1,5 +1,6 @@
 (ns pot.core.ui
-  (:require [om.core :as om]
+  (:require [clojure.browser.repl :as repl]
+            [om.core :as om]
             [goog.events :as events]
             [sablono.core :as html :refer-macros [html]]
             [cljs.core.async :refer [put!]]
@@ -10,6 +11,7 @@
   (:import [goog.events KeyHandler KeyCodes]))
 
 (enable-console-print!)
+(repl/connect "http://localhost:8000/repl")
 
 (def key-direction-map
   {KeyCodes.LEFT  :left
