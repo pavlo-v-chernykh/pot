@@ -13,10 +13,14 @@
   [init-data]
   (-> init-data init-state atom))
 
+(defn init-history
+  []
+  {:snapshots []
+   :cursor    0})
+
 (defn create-history
   []
-  (atom {:snapshots []
-         :cursor    0}))
+  (atom (init-history)))
 
 (defn create-storage
   []
