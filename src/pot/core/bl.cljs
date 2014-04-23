@@ -2,6 +2,10 @@
   (:require-macros [cljs.core.match.macros :refer [match]])
   (:require [cljs.core.match]))
 
+(defn make-board
+  [height width]
+  (vec (repeat height (vec (repeat width nil)))))
+
 (defn find-empty
   [board]
   (apply
@@ -24,6 +28,10 @@
     (if (seq empty-cells)
       (add-cell board (rand-nth empty-cells))
       board)))
+
+(defn add-random-cells
+  [n board]
+  (->> board (iterate add-random-cell) rest (take n) last))
 
 (defn process-pair
   [f s]
