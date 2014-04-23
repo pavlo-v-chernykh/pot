@@ -38,9 +38,8 @@
     (when msg
       (put! actions msg))))
 
-(def app-state (create-state {:width  4
-                              :height 4
-                              :init   2}))
+(def app-config {:width 4 :height 4 :init 2})
+(def app-state (create-state app-config))
 (def app-history (create-history))
 (def channels (create-channels))
 (def storage (create-storage))
@@ -83,6 +82,22 @@
                   board)])])))))
   app-state
   {:target     (.getElementById js/document "app")
+   :init-state {:channels channels}})
+
+(om/root
+  (fn [cursor owner]
+    (reify
+      om/IDisplayName
+      (display-name [_] "controls")
+      om/IRenderState
+      (render-state [_ {{:keys [actions]} :channels}]
+        (html
+          [:div
+           [:button
+            {:on-click (fn [_] (put! actions {:msg :new-game}))}
+            "New Game"]]))))
+  app-state
+  {:target     (.getElementById js/document "controls")
    :init-state {:channels channels}})
 
 (listen-channels app-state app-history channels)
