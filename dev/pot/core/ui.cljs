@@ -85,7 +85,7 @@
    :init-state {:channels channels}})
 
 (om/root
-  (fn [cursor owner]
+  (fn [_ _]
     (reify
       om/IDisplayName
       (display-name [_] "controls")
