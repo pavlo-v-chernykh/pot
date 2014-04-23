@@ -27,5 +27,6 @@
   [state history storage]
   (when-let [stored-history (.get storage :history)]
     (when-let [restored-history (read-string stored-history)]
-      (reset! state (get-in restored-history [:snapshots (:cursor restored-history)]))
+      (when-let [restored-state (get-in restored-history [:snapshots (:cursor restored-history)])]
+        (reset! state restored-state))
       (reset! history restored-history))))
