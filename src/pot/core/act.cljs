@@ -1,11 +1,13 @@
 (ns pot.core.act
   (:require-macros [cljs.core.async.macros :refer [go alt!]])
   (:require [cljs.reader :refer [read-string]]
-            [pot.core.hand :refer [move-handler undo-handler state-watcher history-watcher]]))
+            [pot.core.hand :refer [move-handler undo-handler new-game-handler
+                                   state-watcher history-watcher]]))
 
 (def ^:private msg-handler-map
-  {:move      move-handler
-   :undo      undo-handler})
+  {:move     move-handler
+   :undo     undo-handler
+   :new-game new-game-handler})
 
 (defn- process-msg
   [{action-key :msg :as msg} state history]

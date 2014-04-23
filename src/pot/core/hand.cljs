@@ -1,6 +1,7 @@
 (ns pot.core.hand
   (:require [pot.core.bl :refer [move-left move-right move-up move-down
-                                 can-take-step? add-random-cell]]))
+                                 can-take-step? add-random-cell]]
+            [pot.core.state :refer [init-state]]))
 
 (defn state-watcher
   [_ history]
@@ -48,3 +49,7 @@
         prev-snapshot (get-in history-value [:snapshots (dec (:cursor history-value))])]
     (when prev-snapshot
       (reset! state prev-snapshot))))
+
+(defn new-game-handler
+  [_ state _]
+  (reset! state (init-state {:width 4 :height 4 :init 2})))
