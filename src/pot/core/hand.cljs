@@ -51,6 +51,6 @@
       (reset! state prev-snapshot))))
 
 (defn new-game-handler
-  [_ state history]
-  (reset! state (init-state {:width 4 :height 4 :init 2}))
+  [{:keys [width height init]} state history]
+  (reset! state (init-state {:width width :height height :init init}))
   (reset! history (init-history)))

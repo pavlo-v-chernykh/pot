@@ -92,15 +92,16 @@
       om/IDisplayName
       (display-name [_] "controls")
       om/IRenderState
-      (render-state [_ {{:keys [actions]} :channels}]
+      (render-state [_ {{:keys [actions]}           :channels
+                        {:keys [height width init]} :config}]
         (html
           [:div
            [:button
-            {:on-click (fn [_] (put! actions {:msg :new-game}))}
+            {:on-click (fn [_] (put! actions {:msg :new-game :width width :height height :init init}))}
             "New Game"]]))))
   app-state
   {:target     (.getElementById js/document "controls")
-   :init-state {:channels channels}})
+   :init-state {:channels channels :config app-config}})
 
 (listen-channels app-state app-history channels)
 (watch-changes app-state app-history storage)
