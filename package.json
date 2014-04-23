@@ -1,0 +1,14 @@
+{
+  "name": "pot",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pavel-v-chernykh/pot.git"
+  },
+  "version": "0.0.1",
+  "devDependencies": {
+    "grunt": "^0.4.4",
+    "load-grunt-tasks": "^0.4.0",
+    "time-grunt": "^0.3.1",
+    "grunt-contrib-connect": "^0.7.1"
+  }
+}
