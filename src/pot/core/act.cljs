@@ -10,7 +10,8 @@
 (defn- process-msg
   [{action-key :msg :as msg} state history]
   (let [{action-handler action-key} msg-handler-map]
-    (action-handler msg state history)))
+    (when action-handler
+      (action-handler msg state history))))
 
 (defn listen-channels
   [state history {:keys [actions]}]
