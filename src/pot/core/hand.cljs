@@ -1,7 +1,7 @@
 (ns pot.core.hand
   (:require [pot.core.bl :refer [move-left move-right move-up move-down
                                  can-take-step? add-random-cell]]
-            [pot.core.state :refer [init-state init-history]]))
+            [pot.core.comp :refer [init-state init-history]]))
 
 (defn state-watcher
   [_ history]

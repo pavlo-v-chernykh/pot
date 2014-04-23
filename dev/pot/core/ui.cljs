@@ -6,8 +6,7 @@
             [cljs.core.async :refer [put!]]
             [pot.core.bl :refer [game-over? add-random-cell]]
             [pot.core.act :refer [listen-channels watch-changes restore-state]]
-            [pot.core.state :refer [create-state create-history create-storage]]
-            [pot.core.chan :refer [create-channels]])
+            [pot.core.comp :refer [create-state create-channels create-history create-storage]])
   (:import [goog.events KeyHandler KeyCodes]))
 
 (enable-console-print!)
