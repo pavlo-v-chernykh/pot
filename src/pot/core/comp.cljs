@@ -8,6 +8,7 @@
   {:pre [(<= init (* height width))]}
   [{:keys [height width init]}]
   {:board     (add-random-cells init (make-board height width))
+   :score     0
    :direction nil})
 
 (defn create-state

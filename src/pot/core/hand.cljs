@@ -32,16 +32,17 @@
 
 (defn move-handler
   [{:keys [direction]} state history]
-  (let [board (:board @state)
-        handler (direction direction-handler-map)
+  (let [state-value @state
+        board (:board state-value)
+        processed-board ((direction direction-handler-map) board)
         history-value @history
-        cursor (:cursor history-value)
-        next-snapshot (get-in history-value [:snapshots (inc cursor)])]
-    (when (can-take-step? board handler)
+        next-snapshot (get-in history-value [:snapshots (inc (:cursor history-value))])]
+    (when (not= board processed-board)
       (if (and next-snapshot (= direction (:direction next-snapshot)))
         (reset! state next-snapshot)
-        (reset! state {:board     (-> board handler add-random-cell)
-                       :direction direction})))))
+        (reset! state {:board     (add-random-cell processed-board)
+                       :direction direction
+                       :score     (+ (:score state-value) (-> processed-board meta :score))})))))
 
 (defn undo-handler
   [_ state history]

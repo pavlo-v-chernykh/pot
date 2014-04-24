@@ -36,39 +36,49 @@
 (defn process-pair
   [f s]
   (match [f s]
-         [nil nil]             [nil]
-         [f nil]               [f]
-         [nil s]               [s]
-         [f s :guard #(= f s)] [(+ f s) nil]
-         :else                 [f s]))
+         [nil nil]             (with-meta [nil]         {:score 0})
+         [f nil]               (with-meta [f]           {:score 0})
+         [nil s]               (with-meta [s]           {:score 0})
+         [f s :guard #(= f s)] (with-meta [(+ f s) nil] {:score (+ f s)})
+         :else                 (with-meta [f s]         {:score 0})))
 
 (defn compress-row
   [row]
   (reduce
     (fn [a v]
-      (apply conj
-             (if (seq a) (pop a) a)
-             (process-pair (peek a) v)))
-    []
+      (let [pair (process-pair (peek a) v)]
+        (with-meta
+          (apply conj (if (seq a) (pop a) a) pair)
+          {:score (+ (-> a meta :score)
+                     (-> pair meta :score))})))
+    (with-meta [] {:score 0})
     row))
 
 (defn process-row
   [row]
-  (let [compressed (compress-row row)
-        missing-count (- (count row) (count compressed))]
-    (concat compressed (repeat missing-count nil))))
+  (let [compressed-row (compress-row row)]
+    (with-meta
+      (vec (concat compressed-row (repeat (- (count row) (count compressed-row)) nil)))
+      {:score (-> compressed-row meta :score)})))
 
 (defn process-board
   [board]
-  (mapv (comp vec process-row) board))
+  (let [processed-board (mapv process-row board)]
+    (with-meta
+      processed-board
+      {:score (apply + (map (comp :score meta) processed-board))})))
 
 (defn mirrorv-board
   [board]
-  (mapv (comp vec reverse) board))
+  (with-meta
+    (mapv (comp vec reverse) board)
+    {:score (-> board meta :score)}))
 
 (defn transpose-board
   [board]
-  (apply mapv vector board))
+  (with-meta
+    (apply mapv vector board)
+    {:score (-> board meta :score)}))
 
 (def move-left process-board)
 (def move-right (comp mirrorv-board process-board mirrorv-board))
