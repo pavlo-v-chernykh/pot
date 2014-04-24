@@ -96,3 +96,7 @@
 (defn game-over?
   [board]
   (not (can-take-some-step? board [move-left move-right move-up move-down])))
+
+(defn win?
+  [board win-value]
+  (= (->> board flatten (remove nil?) (apply max)) win-value))

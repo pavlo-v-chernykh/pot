@@ -1,41 +1,6 @@
 (ns pot.core.hand
-  (:require [pot.core.bl :refer [move-left move-right move-up move-down add-random-cell]]
-            [pot.core.comp :refer [init-state init-history]]))
-
-(defn- update-history
-  [history old new]
-  (let [cursor (:cursor history)
-        prev-snapshot (get-in history [:snapshots (dec cursor)])
-        next-snapshot (get-in history [:snapshots (inc cursor)])]
-    (letfn [(save-old
-              [history]
-              (assoc-in history [:snapshots cursor] old))
-            (truncate
-              [history]
-              (if (and next-snapshot (not= new prev-snapshot) (not= new next-snapshot))
-                (update-in history [:snapshots] (comp vec (partial take (inc cursor))))
-                history))
-            (save-new
-              [history]
-              (if (not= new prev-snapshot)
-                (assoc-in history [:snapshots (inc cursor)] new)
-                history))
-            (update-cursor
-              [history]
-              (update-in history [:cursor] (if (= new prev-snapshot) dec inc)))]
-      (-> history save-old truncate save-new update-cursor))))
-
-(defn state-watcher
-  [_ history]
-  (fn [_ _ old new]
-    (when (not= old new)
-      (swap! history update-history old new))))
-
-(defn history-watcher
-  [storage key]
-  (fn [_ _ old new]
-    (when-not (= old new)
-      (.set storage key (pr-str new)))))
+  (:require [pot.core.bl :refer [move-left move-right move-up move-down
+                                 add-random-cell add-random-cells make-board win?]]))
 
 (def ^:private direction-handler-map
   {:left  move-left
@@ -43,28 +8,48 @@
    :up    move-up
    :down  move-down})
 
-(defn move-handler
-  [{:keys [direction]} state history]
+(defn- move-handler
+  [{:keys [config state history]} {:keys [direction]}]
   (let [state-value @state
         board (:board state-value)
-        processed-board ((direction direction-handler-map) board)
-        history-value @history
-        next-snapshot (get-in history-value [:snapshots (inc (:cursor history-value))])]
-    (when (not= board processed-board)
-      (if (and next-snapshot (= direction (:direction next-snapshot)))
-        (reset! state next-snapshot)
-        (reset! state {:board     (add-random-cell processed-board)
-                       :direction direction
-                       :score     (+ (:score state-value) (-> processed-board meta :score))})))))
+        win-value (-> config deref :win-value)]
+    (when (not (win? board win-value))
+      (let [handler (direction direction-handler-map)
+            processed-board (handler board)]
+        (when (not= board processed-board)
+          (let [history-value @history
+                next-snapshot (get-in history-value [:snapshots (inc (:cursor history-value))])]
+            (if (and next-snapshot (= direction (:direction next-snapshot)))
+              (reset! state next-snapshot)
+              (let [total-score (:score state-value)
+                    step-score (-> processed-board meta :score)]
+                (reset! state {:board     (add-random-cell processed-board)
+                               :direction direction
+                               :score     (+ total-score step-score)})))))))))
 
-(defn undo-handler
-  [_ state history]
+(defn- undo-handler
+  [{:keys [state history]} _]
   (let [history-value @history
         prev-snapshot (get-in history-value [:snapshots (dec (:cursor history-value))])]
     (when prev-snapshot
       (reset! state prev-snapshot))))
 
-(defn new-game-handler
-  [{:keys [width height init]} state history]
-  (reset! state (init-state {:width width :height height :init init}))
-  (reset! history (init-history)))
+(defn- new-game-handler
+  [{:keys [config state history]} _]
+  (let [{:keys [width height init]} @config]
+    (reset! state {:board     (add-random-cells init (make-board height width))
+                   :score     0
+                   :direction nil}))
+  (reset! history {:snapshots []
+                   :cursor    0}))
+
+(def ^:private msg-handler-map
+  {:move     move-handler
+   :undo     undo-handler
+   :new-game new-game-handler})
+
+(defn process-msg
+  [system {action-key :msg :as msg}]
+  (let [{action-handler action-key} msg-handler-map]
+    (when action-handler
+      (action-handler system msg))))
