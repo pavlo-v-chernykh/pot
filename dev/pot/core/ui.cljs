@@ -102,5 +102,18 @@
   {:target     (.getElementById js/document "controls")
    :init-state {:channels channels :config app-config}})
 
+(om/root
+  (fn [cursor _]
+    (reify
+      om/IDisplayName
+      (display-name [_] "info")
+      om/IRender
+      (render [_]
+        (html
+          [:div
+           [:span (:score cursor)]]))))
+  app-state
+  {:target     (.getElementById js/document "info")})
+
 (listen-channels app-state app-history channels)
 (watch-changes app-state app-history storage)
