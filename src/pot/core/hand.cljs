@@ -2,20 +2,34 @@
   (:require [pot.core.bl :refer [move-left move-right move-up move-down add-random-cell]]
             [pot.core.comp :refer [init-state init-history]]))
 
+(defn- update-history
+  [history old new]
+  (let [cursor (:cursor history)
+        prev-snapshot (get-in history [:snapshots (dec cursor)])
+        next-snapshot (get-in history [:snapshots (inc cursor)])]
+    (letfn [(save-old
+              [history]
+              (assoc-in history [:snapshots cursor] old))
+            (truncate
+              [history]
+              (if (and next-snapshot (not= new prev-snapshot) (not= new next-snapshot))
+                (update-in history [:snapshots] (comp vec (partial take (inc cursor))))
+                history))
+            (save-new
+              [history]
+              (if (not= new prev-snapshot)
+                (assoc-in history [:snapshots (inc cursor)] new)
+                history))
+            (update-cursor
+              [history]
+              (update-in history [:cursor] (if (= new prev-snapshot) dec inc)))]
+      (-> history save-old truncate save-new update-cursor))))
+
 (defn state-watcher
   [_ history]
   (fn [_ _ old new]
-    (let [history-value @history
-          cursor (:cursor history-value)
-          prev-snapshot (get-in history-value [:snapshots (dec cursor)])
-          next-snapshot (get-in history-value [:snapshots (inc cursor)])]
-      (when (not= old new)
-        (swap! history assoc-in [:snapshots cursor] old)
-        (when (not= new prev-snapshot)
-          (when (and next-snapshot (not= new next-snapshot))
-            (swap! history update-in [:snapshots] (comp vec (partial take (inc cursor)))))
-          (swap! history assoc-in [:snapshots (inc cursor)] new))
-        (swap! history update-in [:cursor] (if (= new prev-snapshot) dec inc))))))
+    (when (not= old new)
+      (swap! history update-history old new))))
 
 (defn history-watcher
   [storage key]
