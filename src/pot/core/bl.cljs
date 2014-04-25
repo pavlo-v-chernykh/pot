@@ -59,7 +59,7 @@
   (let [compressed-row (compress-row row)]
     (with-meta
       (vec (concat compressed-row (repeat (- (count row) (count compressed-row)) nil)))
-      {:score (-> compressed-row meta :score)})))
+      (meta compressed-row))))
 
 (defn process-board
   [board]
@@ -72,13 +72,13 @@
   [board]
   (with-meta
     (mapv (comp vec reverse) board)
-    {:score (-> board meta :score)}))
+    (meta board)))
 
 (defn transpose-board
   [board]
   (with-meta
     (apply mapv vector board)
-    {:score (-> board meta :score)}))
+    (meta board)))
 
 (def move-left process-board)
 (def move-right (comp mirrorv-board process-board mirrorv-board))
