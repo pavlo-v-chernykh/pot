@@ -6,7 +6,7 @@
                  [org.clojure/google-closure-library-third-party "0.0-20130212-95c19e7f0f5f"]
                  [org.clojure/core.async "0.1.278.0-76b25b-alpha"]
                  [org.clojure/core.match "0.2.1"]
-                 [om "0.5.3"]
+                 [om "0.6.1"]
                  [sablono "0.2.14"]]
   :plugins [[lein-cljsbuild "1.0.3"]]
   :source-paths ["src"]
