@@ -2,10 +2,9 @@
   (:require-macros [cljs.core.async.macros :refer [go alt!]])
   (:require [cljs.reader :refer [read-string]]
             [cljs.core.async :refer [chan]]
+            [goog.storage.mechanism.mechanismfactory :as storage-factory]
             [pot.core.bl :refer [make-board add-random-cells]]
-            [pot.core.hand :refer [process-msg]])
-  (:import [goog.storage Storage]
-           [goog.storage.mechanism HTML5LocalStorage]))
+            [pot.core.hand :refer [process-msg]]))
 
 (defn- create-config
   {:pre [(every? number? [height width init win-value])
@@ -35,7 +34,7 @@
 
 (defn- create-storage
   []
-  (Storage. (HTML5LocalStorage.)))
+  (storage-factory/create))
 
 (defn- create-runtime
   []
@@ -51,7 +50,7 @@
   (let [storage (:storage system)
         history (-> system :history deref)
         hkey (-> system :config deref :history-store-key)]
-    (.set storage hkey (pr-str history))
+    (.set storage hkey history)
     system))
 
 (defn- restore-system
