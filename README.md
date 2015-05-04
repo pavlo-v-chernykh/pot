@@ -12,5 +12,3 @@ I've developed it using the next technology stack
  * [React](http://facebook.github.io/react/)
  * [Om](https://github.com/swannodette/om)
  * [core.async](https://github.com/clojure/core.async)
-
-[Demo draft](http://pavel-v-chernykh.github.io/pot/react.html)
