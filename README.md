@@ -9,6 +9,6 @@ with undo functionality.
 
 I've developed it using the next technology stack
  * [ClojureScript](https://github.com/clojure/clojurescript)
+ * [core.async](https://github.com/clojure/core.async)
  * [React](http://facebook.github.io/react/)
  * [Om](https://github.com/swannodette/om)
- * [core.async](https://github.com/clojure/core.async)
